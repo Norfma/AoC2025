@@ -25,10 +25,34 @@ foreach (var line in File.ReadLines(@"C:\Users\Administrator\Documents\AoC2025\A
     }
 }
 long count = 0;
-for (int i = 0; i < ranges.Count; i++)
+ranges = ranges.OrderBy(r => r.Start).ToList();
+
+bool hasFinishedMerging = false;
+while (hasFinishedMerging == false)
 {
-    count += ranges[i].Size();
-    count -= ranges.Take(i).Sum(r => r.Intersect(ranges[i]));
+    var initialCount = ranges.Count;
+    ranges = ranges
+        .OrderBy(r => r.Start)
+        .Aggregate(new List<Range>(), (merged, current) =>
+        {
+            var last = merged.LastOrDefault();
+            if (last != null && last.Intersect(current))
+            {
+                merged[merged.Count - 1] = last.merge(current);
+            }
+            else
+            {
+                merged.Add(current);
+            }
+            return merged;
+        });
+    
+    hasFinishedMerging = ranges.Count == initialCount;
+}
+
+foreach (var range in ranges)
+{
+    count += range.Size();  
 }
 Console.WriteLine($"Total number of fresh IDs in ranges: {count}");
 Console.WriteLine($"Number of fresh ingredients: {CountFreshIngredients}");
